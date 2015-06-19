@@ -2,7 +2,23 @@
 	include 'app.php';
 	
 	$arr = Array(false => 'false', true => 'true');
+	
+	// get plans
 	$plans = file_get_contents(APP_LOCATION.'data/plans.json');
+	
+	// get system message
+	$system_message = '';
+	
+	if(defined('SYSTEM_MESSAGE')){
+		$system_message = SYSTEM_MESSAGE;
+	}
+	
+	// hide/show passcode
+	$showPasscode = true;
+	
+	if(PASSCODE == ''){
+		$showPasscode = false;
+	}
 	
 	header("content-type: application/javascript"); 
 	
@@ -13,6 +29,7 @@ angular.module('respond.setup', [])
 	
 	// urls where your app (url), api and sites folder are publicly available
 	url: 					'<?php print APP_URL; ?>',
+	login:					'<?php print LOGIN_URL; ?>',
 	api: 					'<?php print API_URL; ?>',
 	sites:					'<?php print SITES_URL; ?>',
 	site:					'<?php print SITE_URL; ?>',
@@ -41,12 +58,10 @@ angular.module('respond.setup', [])
 	paypalCurrency:			'<?php print PAYPAL_CURRENCY; ?>',
 	paypalLogo:				'<?php print PAYPAL_LOGO; ?>',
 	
-	// pascode used by create (must match value set in API)
-	passcode: 				'<?php print PASSCODE; ?>',
-	
 	// app branding
 	app:					'<?php print BRAND; ?>',
 	version:				'<?php print VERSION; ?>',
+	updateLink:				'<?php print UPDATE_LINK; ?>',
 	copy: 					'<?php print COPY; ?>',
 	email:					'<?php print EMAIL; ?>',
 	
@@ -63,6 +78,13 @@ angular.module('respond.setup', [])
 	disableAfterTrial:		<?php print $arr[DISABLE_AFTER_TRIAL]; ?>,
 	
 	// themes 
-	themes:					'<?php print THEMES_FOLDER; ?>'
+	themes:					'<?php print THEMES_FOLDER; ?>',
+	
+	// app
+	systemMessage:			'<?php print $system_message; ?>',
+	urlMode:			 	'<?php print URL_MODE; ?>',
+	
+	// show passcode
+	showPasscode: 			<?php print $arr[$showPasscode]; ?>
 	
 });

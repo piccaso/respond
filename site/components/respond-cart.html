@@ -1,8 +1,19 @@
-<polymer-element name="respond-cart" attributes="display">
-  <template>
-    <style>
-    
-		.respond-cart{
+<dom-module id="respond-cart">
+
+	<style>
+		
+		.respond-cart-container svg{
+			width: 25px;
+		    height: 25px;
+		  	margin: 0;
+		  	padding: 0;
+		  	line-height: 25px;
+		  	display: inline-block;
+		  	vertical-align: middle;
+			fill: currentColor;
+		}
+	
+		.respond-cart-container{
 		  	position: fixed;
 		  	top: 0;
 		  	left: 0;
@@ -10,7 +21,7 @@
 		  	padding: 0;
 		  	z-index: 100;
 		  	text-align: left;
-		  	margin-top: -350px;
+		  	margin-top: -400px;
 		  	z-index: 5;
 		  	background-color: #fff;
 		  	z-index: 10000;
@@ -19,12 +30,12 @@
 			min-height: 350px;
 		}
 		
-			.respond-cart.active{
+			.respond-cart[visible]{
 				margin-top: 0;
 			}
 			
-		/* close search */
-		.respond-cart .close-cart{
+		/* close cart */
+		.respond-cart-container .close-cart{
 			height: 40px;
 			width: 40px;
 			text-align: center;
@@ -38,13 +49,13 @@
 		  	background-color: #fff;
 		}
 		
-		.respond-cart .cart-container{
+		.respond-cart-container .cart-container{
 			height: 300px;
 			overflow: auto;
 		}
 		
 		/* table */
-		.respond-cart table{
+		.respond-cart-container table{
 			border: none;
 			padding: 0;
 			margin: 50px 0 0 0;
@@ -52,35 +63,35 @@
 			border-collapse: collapse;
 		}
 		
-		.respond-cart table th{
+		.respond-cart-container table th{
 			font-weight: bold;
 		}
 		
-		.respond-cart table th, .respond-cart table td{
+		.respond-cart-container table th, .respond-cart-container table td{
 			padding: 5px;
 			margin: 0;
 			border-bottom: 1px solid #ddd;
 		}
 		
-		.respond-cart table th small, .respond-cart table td small{
+		.respond-cart-container table th small, .respond-cart-container table td small{
 			display: block;
 			color: #888;
 			text-transform: uppercase;
 		}
 		
-		.respond-cart table th:first-child, .respond-cart table td:first-child{
+		.respond-cart-container table th:first-child, .respond-cart-container table td:first-child{
 			padding-left: 10px;
 		}
 		
-		.respond-cart table th:last-child, .respond-cart table td:last-child{
+		.respond-cart-container table th:last-child, .respond-cart-container table td:last-child{
 			padding-right: 10px;
 		}
 		
-		.respond-cart table th.number, .respond-cart table td.number{
+		.respond-cart-container table th.number, .respond-cart-container table td.number{
 			text-align: right;
 		}
 		
-		.respond-cart td button{
+		.respond-cart-container td button{
 			background-color: #fff;
 			border: 1px solid #ddd;
 			padding: 7px 10px;
@@ -93,7 +104,17 @@
 			color: #CF4647;
 		}
 		
-		.respond-cart td input[type=number]{
+		.respond-cart-container td button.remove{
+			margin: 0;
+			padding: 0;
+			width: 25px;
+		}
+		
+			.respond-cart-container td button.remove svg{
+				margin-left: 0;
+			}
+		
+		.respond-cart-container td input[type=number]{
 			height: 36px;
 			line-height: 36px;
 			border: 1px solid #ddd;
@@ -102,11 +123,21 @@
 		}
 		
 		/* header */
-		.respond-cart table thead th{
+		.respond-cart-container table thead th{
 			background-color: #f0f0f0;
 			border-top: 1px solid #ddd;
 		}
 		
+		/* clear-cart */
+		.respond-cart-container .clear-cart{
+			position: absolute;
+			top: 22px;
+			left: 10px;
+		  	z-index: 10;
+		  	cursor: pointer;
+		}
+		
+		/* checkout */
 		.checkout{
 			position: absolute;
 			bottom: 0;
@@ -121,23 +152,26 @@
 			background-color: #fff;
 			border: 1px solid #ddd;
 			padding: 10px 15px;
-			margin: 10px 15px 10px 0;
-			font-size: 16px;
+			margin: 10px 10px 10px 0;
+			font-size: 15px;
 			outline: none;
+			text-transform: none;
 		}
+		
+			.checkout button i{
+				color: #009cde;
+			}
 		
 		.checkout a{
 			cursor: pointer;
 			position: absolute;
 			top: 19px;
-			left: 15px;
-			text-transform: uppercase;
+			left: 10px;
+			text-transform: none;
 		}
 		
 		.checkout .total{
-			display: inline-block;
-			font-weight: bold;
-			margin-right: 10px;
+			display: none;
 		}
 		
 		.checkout .total span{
@@ -146,153 +180,178 @@
 			font-weight: normal;
 		}
 		
+		.respond-cart-container svg{
+			margin-left: 10px;
+			color: #aaa;
+			height: 20px !important;
+		}
 		
-	</style>
+		/* tax and shipping */
+		.tax, .shipping, .local-shipping{
+			display: none;
+		}
+		
+		.tax[visible], .shipping[visible], .local-shipping[visible]{
+			display: block;
+		}
+		
+		/* Small devices (tablets, 768px and up) */
+		@media (min-width: 768px) {
+		
+			.checkout .total{
+				display: inline-block;
+			}
+			
+		}
+		
+    </style>
 
-	<div class="respond-cart {{ {active: display == 'visible'} | tokenList}}">
+	<template>
 	
-		<button class="close-cart" on-click="{{close}}"><core-icon icon="close"></core-icon></button>
+		<div class="respond-cart-container" visible$="{{showCart}}" dir$="{{dir}}">
 		
-		<div class="cart-container">
-		
-			<table>
-				<thead>
-					<tr>
-						<th>{{label.item | i18n}}</th>
-						<th class="number">{{label.quantity | i18n}}</th>
-						<th class="number">{{label.price | i18n}}</th>
-						<th class="number">{{label.total | i18n}}</th>
-					</tr>
-				</thead>
-				<tbody>
-			<template repeat="{{item in cart}}">
-					<tr class="item">
-						<td class="name">
-							{{item.name}}
-							<small>{{item.sku}}</small>
-						</td>
-						<td class="quantity number">
-							<input type="number" value="{{item.quantity}}" on-change="{{changeItem}}">
-							<button class="remove"
-								on-click="{{removeItem}}">
-								<core-icon icon="close"></core-icon>
-							</button>
-						<td class="price number">{{mark}}{{item.price}} {{currency}}</td>
-						<td class="total number">{{mark}}{{(item.price * item.quantity)}} {{currency}}</td>
-					</tr>
-				<!-- /.item -->
-			</template>
-				<tfoot>
-					<tr class="subtotal">
-						<th colspan="3">
-							{{label.subtotal | i18n}}
-						</th>
-						<td class="number">
-							{{mark}}{{subtotal}} {{currency}}
-						</td>
-					</tr>
-				<template if="tax != 0">
-					<tr class="tax">
-						<th colspan="3">
-							{{label.tax | i18n}}
-						</th>
-						<td class="number">
-							{{mark}}{{tax}} {{currency}}
-						</td>
-					</tr>
+			<button class="close-cart" on-click="close"><svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet"><g><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></g></svg></button>
+			
+			<div class="cart-container">
+			
+				<table>
+					<thead>
+						<tr>
+							<th>{{label.item}}</th>
+							<th class="number">{{label.quantity}}</th>
+							<th class="number">{{label.price}}</th>
+							<th class="number">{{label.total}}</th>
+						</tr>
+					</thead>
+					<tbody>
+				<template id="cartList" is="dom-repeat" items="{{cart}}">
+						<tr class="item">
+							<td class="name">
+								<span>{{item.name}}</span>
+								<span class="local-shipping" visible$="{{item.isShipped}}">
+									<svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet"><g><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></g></svg>
+								</span>
+								<small>{{item.sku}}</small>
+							</td>
+							<td class="quantity number">
+								<input type="number" value$="{{item.quantity}}" on-change="changeItem">
+								<button class="remove"
+									on-click="removeItem">
+									<svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet"><g><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></g></svg>
+								</button>
+							</td>
+							<td class="price number">{{item.priceDisplay}}</td>
+							<td class="total number">{{item.totalDisplay}}</td>	
+						</tr>
+					<!-- /.item -->
 				</template>
-				<template if="shipping != 0">
-					<tr class="shipping">
-						<th colspan="3">
-							{{label.shipping | i18n}}
-						</th>
-						<td class="number">
-							{{mark}}{{shipping}} {{currency}}
-						</td>
-					</tr>
-				</template>
-					<tr class="total">
-						<th colspan="3">
-							{{label.total | i18n}}
-						</th>
-						<td class="number">
-							{{mark}}{{total}} {{currency}}
-						</td>
-					</tr>
-				</tfoot>
-			</table>
-		
-		</div>
-		<!-- /.cart-container -->
+					<tfoot>
+						<tr class="subtotal">
+							<th colspan="3">{{label.subtotal}}</th>
+							<td class="number">{{subtotalDisplay}}</td>
+						</tr>
+						<tr class="tax" visible$="{{showTax}}">
+							<th colspan="3">{{label.tax}}</th>
+							<td class="number">{{taxDisplay}}</td>
+						</tr>
+						<tr class="shipping" visible$="{{showShipping}}">
+							<th colspan="3">{{label.shipping}}</th>
+							<td class="number">{{shippingDisplay}}</td>
+						</tr>
+						<tr class="total">
+							<th colspan="3">{{label.total}}</th>
+							<td class="number">{{totalDisplay}}</td>
+						</tr>
+					</tfoot>
+				</table>
 				
-		<div class="checkout">
-			<a on-click="{{clearCart}}">{{label.clear | i18n}}</a>
+			</div>
+			<!-- /.cart-container -->
+					
+			<div class="checkout">
+				
+				<a class="clear-cart" on-click="clearCart">{{label.clear}}</a>
+				
+				<span class="total">
+					<span>{{label.total}}</span>
+					<span>{{totalDisplay}}</span>
+				</span>
+				
+				<button on-click="checkoutWithPayPal"><span>{{label.checkoutWithPaypal}}</span></button>
+			</div>
 			
-			<span class="total">
-				<span>{{label.total | i18n}}</span>
-				{{mark}}{{total}} {{currency}}
-			</span>
-			
-			<button on-click="{{checkoutWithPayPal}}">{{label.checkoutWithPayPal | i18n}}</button>
 		</div>
-		
-	</div>
+	
+	</template>
+</dom-module>
 
-  </template>
-  
-  <script>
-  Polymer('respond-cart', {
-	  
-	  // labels
-	  label:{
-	  		clear: 'Clear Cart',
-			item: 'Item', 
-			quantity: 'Quantity',
-			price: 'Price',
-			subtotal: 'Subtotal',
-			tax: 'Tax',
-			shipping: 'Shipping',
-			total: 'Total',
-			checkoutWithPayPal: 'Checkout with PayPal'
-	  },
-	  
-	  // defaults
-	  cart: [],
-	  display: 'hidden',
-	  currency: '',
-	  mark: '',
-	  subtotal: 0.00,
-	  tax: 0.00,
-	  taxRate: 0,
-	  shipping: 0.00,
-	  total: 0.00,
-	  numberShipped: 0,
-	  count: 0,
-	  
-	  // ready
-	  ready: function(){
-		  
+<script>
+  Polymer({
+	  	is: "respond-cart",
+	
+	  	// element attributes
+	  	properties: {},
+		
+		// attached
+		attached: function() {
+		
+			// set labels
+			this.label = {
+			  		clear: this.i18n('Clear Cart'),
+					item: this.i18n('Item'), 
+					quantity: this.i18n('Quantity'),
+					price: this.i18n('Price'),
+					subtotal: this.i18n('Subtotal'),
+					tax: this.i18n('Tax'),
+					shipping: this.i18n('Shipping'),
+					total: this.i18n('Total'),
+					checkoutWithPaypal: this.i18n('Checkout with Paypal')
+				};
+				
+			
+			// set cart
+			this.cart = [];
+
+			// set defaults
+			this.showCart = false;
+			this.showShipping = false;
+			this.showTax = false;
 			this.currency = respond.site.settings.Currency;
 			this.taxRate = parseFloat(respond.site.settings.TaxRate);
 			this.pageId = document.body.getAttribute('page');
 			
-			// get cart from session
-			if(sessionStorage['respond-cart'] != null){
-				var str = sessionStorage['respond-cart'];
-			
-				this.cart = eval(str);
-			}
-			else{
-				this.cart = [];
-			}
+			// common symbols
+			var symbols = {
+			    'USD': '$', // US Dollar
+			    'EUR': '€', // Euro
+			    'CRC': '₡', // Costa Rican Colón
+			    'GBP': '£', // British Pound Sterling
+			    'ILS': '₪', // Israeli New Sheqel
+			    'INR': '₹', // Indian Rupee
+			    'JPY': '¥', // Japanese Yen
+			    'KRW': '₩', // South Korean Won
+			    'NGN': '₦', // Nigerian Naira
+			    'PHP': '₱', // Philippine Peso
+			    'PLN': 'zł', // Polish Zloty
+			    'PYG': '₲', // Paraguayan Guarani
+			    'THB': '฿', // Thai Baht
+			    'UAH': '₴', // Ukrainian Hryvnia
+			    'VND': '₫', // Vietnamese Dong
+			};
 			
 			// set mark
-			if(this.currency == 'USD'){
-				this.mark = '$';
+			if(symbols[this.currency] !== undefined) {
+				this.mark = symbols[this.currency];
 			}
-			else{
-				this.mark = ' ';
-			}
+			
+			// set totals
+			this.subtotal = 0;
+			this.tax = 0;
+			this.taxRate = 0;
+			this.shipping = 0;
+			this.total = 0;
+			this.numberShipped = 0;
+			this.count = 0;
 			
 			// refresh the totals in the cart
 			this.refreshCart();
@@ -333,13 +392,13 @@
 			if(this.processorTransactionId != null){
 				this.clearCart();
 			}
-
-	  },
-	  
-	  // refreshes the cart
-	  refreshCart: function(){
-	  
-	  		// get cart from session
+			
+		},
+		
+		// refreshes the cart
+		refreshCart: function(){
+		
+			// get cart from session
 			if(sessionStorage['respond-cart'] != null){
 				var str = sessionStorage['respond-cart'];
 			
@@ -348,24 +407,49 @@
 			else{
 				this.cart = [];
 			}	
-	  
+		
+			// create display values
+			for(x=0; x<this.cart.length; x++){
+			
+				this.cart[x].isShipped = false;
+				
+				if(this.cart[x].shipping == 'shipped'){
+					this.cart[x].isShipped = true;
+				}
+			
+				this.cart[x].priceDisplay = this.mark + this.formatCurrency(this.cart[x].price) + ' ' + this.currency;
+				this.cart[x].totalDisplay = this.mark + this.formatCurrency(this.cart[x].price * this.cart[x].quantity) + ' ' + this.currency;
+			}
+			
 			// calculate subtotal
 			this.subtotal = this.calculateSubtotal();
+			this.subtotalDisplay = this.mark + this.formatCurrency(this.subtotal) + ' ' + this.currency;
 			
 			// calculate totalweight
 			this.totalWeight = this.calculateTotalWeight();  
 			
 			// set tax
 			this.tax =  this.subtotal * this.taxRate;
+			this.taxDisplay = this.mark + this.formatCurrency(this.tax) + ' ' + this.currency;
+			
+			if(this.tax > 0){
+				this.showTax = true;
+			}
 			
 			// set # shipped
 			this.numberShipped = this.calculateNumberShipped();
 			
 			// set shipping $
 			this.shipping = this.calculateShipping();
+			this.shippingDisplay = this.mark + this.formatCurrency(this.shipping) + ' ' + this.currency;
+			
+			if(this.shipping > 0){
+				this.showShipping = true;
+			}
 			
 			// set total
-			this.total = parseFloat(this.subtotal + this.tax + this.shipping).toFixed(2);
+			this.total = parseFloat(this.subtotal + this.tax + this.shipping);
+			this.totalDisplay = this.mark + this.formatCurrency(this.total) + ' ' + this.currency;
 			
 			// set count
 			this.count = this.calculateCount();
@@ -375,10 +459,11 @@
 			
 			// fire updated event
 			this.fire('cart-updated');
-	  },
-	  
-	  // clears the cart
-	  clearCart: function(){
+			
+		},
+		
+		// clears the cart
+		clearCart: function(){
 		  
 		  	// clear the cart and save it to localstorage
 		  	this.cart = [];
@@ -391,24 +476,22 @@
 			// recalculate
 			this.refreshCart();
 		  
-	  },
-	  
-	  // calculates the subtotal
-	  calculateSubtotal: function(){
+		},
+		
+		// calculates the subtotal
+		calculateSubtotal: function(){
 		  	var st = 0;
 			
 			// subtotal the items in the cart
 			for(x=0; x<this.cart.length; x++){
-			
 				st = st + (this.cart[x].price * this.cart[x].quantity);
-			
 			}
 			
-			return st.toFixed(2);
-	  },
-	  
-	  // calculates the count
-	  calculateCount: function(){
+			return st;
+		},
+		
+		// calculates the count
+		calculateCount: function(){
 		  	var q = 0;
 			
 			// subtotal the items in the cart
@@ -419,10 +502,10 @@
 			}
 			
 			return q;
-	  },
-	  
-	  // calculates the total weight
-	  calculateTotalWeight: function(){
+		},
+		
+		// calculates the total weight
+		calculateTotalWeight: function(){
 		  
 		  	var w = 0;
 			
@@ -436,12 +519,11 @@
 			}
 			
 			return w;
-	  
-	  
-	  },
-	  
-	  // calculate the number shipped
-	  calculateNumberShipped: function(){
+		
+		},
+		
+		// calculate the number shipped
+		calculateNumberShipped: function(){
 		
 			var count = 0;
 			
@@ -456,10 +538,10 @@
 		
 			return count;
 		  
-	  },
-	  
-	  // calculate shipping
-	  calculateShipping: function(){
+		},
+		
+		// calculate shipping
+		calculateShipping: function(){
 		  
 		  	// set default stop
 			var stop = 0;
@@ -521,32 +603,36 @@
 			// default is 0
 			return 0;
 		  
-	  },	
-	  
-	  // opens the cart
-      open: function(){
-      
-			this.display = 'visible';
-			this.setAttribute('display', 'visible');
-	      
-      },
-      
-      // closes the cart
-      close: function(){
-      
-			this.display = 'hidden';
-			this.setAttribute('display', 'hidden');
-	      
-      },
-      
-      // change item in the cart
-      changeItem: function(e, d, s){
-	      
-      		var item = e.target.templateInstance.model.item;
-      		
-      		if(item.quantity <= 0){
-				var index = this.cart.indexOf(item);
+		},	
+		
+		// opens the cart
+		open: function(){
+		
+			this.showCart = true;
+		  
+		},
+		
+		// closes the cart
+		close: function(){
+		
+			this.showCart = false;
+		  
+		},
+		
+		// change item in the cart
+		changeItem: function(e){
+		  
+			var item = this.$.cartList.itemForElement(e.target);
+			var q = parseInt(e.target.value);
+			
+			var index = this.cart.indexOf(item);
+			
+			// remove or update	
+			if(q <= 0){
 				this.cart.splice(index, 1);   
+			}
+			else{
+				this.cart[index].quantity = q;
 			}
 			
 			// save cart to local storage
@@ -555,13 +641,13 @@
 			
 			// recalculate
 			this.refreshCart();
-      },
-      
-      // remove item from the cart
-      removeItem: function(e, d, s){
-      
-      		var item = e.target.templateInstance.model.item;
-      		
+		},
+		
+		// remove item from the cart
+		removeItem: function(e){
+			
+			var item = this.$.cartList.itemForElement(e.target);
+				
 			var index = this.cart.indexOf(item);
 			this.cart.splice(index, 1);
 			
@@ -571,13 +657,19 @@
 			
 			// recalculate
 			this.refreshCart();
-      },
-      
-      // checkout with PayPal
-      checkoutWithPayPal: function(){
-	      
-			var email = respond.site.settings.PayPalId;
+		},
+		
+		// checkout with PayPal
+		checkoutWithPayPal: function(){
+		
 			var logo = respond.site.ImagesUrl + respond.site.settings.LogoUrl;
+		
+			// set logo
+			if(respond.site.settings.PayPalLogoUrl != ''){
+				logo = respond.site.ImagesUrl + respond.site.settings.PayPalLogoUrl;
+			}
+		  
+			var email = respond.site.settings.PayPalId;
 			var currency = respond.site.settings.Currency;
 			var returnUrl = respond.site.settings.Domain;
 			var api = respond.site.settings.API;
@@ -620,7 +712,7 @@
 			
 				data['item_name_'+c] = item.name;
 				data['quantity_'+c] = item.quantity;
-				data['amount_'+c] = parseFloat(item.price).toFixed(2);
+				data['amount_'+c] = parseFloat(item.price);
 				data['item_number_'+c] = item.sku;
 			
 				if($.trim(item.shipping.toUpperCase()) == 'SHIPPED'){
@@ -631,8 +723,8 @@
 			
 			data['no_shipping'] = noshipping; // 1 = do not prompt, 2 = prompt for address and require it
 			data['weight_unit'] = weightUnit;
-			data['handling_cart'] = parseFloat(this.shipping).toFixed(2);
-			data['tax_cart'] = parseFloat(this.tax).toFixed(2);
+			data['handling_cart'] = parseFloat(this.shipping);
+			data['tax_cart'] = parseFloat(this.tax);
 			
 			// live url
 			var url = 'https://www.paypal.com/cgi-bin/webscr';
@@ -657,13 +749,16 @@
 			
 			// submit form
 			document.getElementById('paypal-form').submit();
-	      
-      },
-      
-      i18n: function(text){
-	      return respond.site.i18n(text);
-      }
+		  
+		},
+		
+		i18n: function(text){
+		  return respond.site.i18n(text);
+		},
+		
+		formatCurrency: function(number){
+		  return accounting.formatNumber(number, 2, ' ');
+		}
 	
-  });
-  </script>
-</polymer-element>
+	});
+</script>

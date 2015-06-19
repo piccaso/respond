@@ -140,6 +140,16 @@
 		"script":	"plugins/component/respond.component.js"
 	},
 	{
+		"action":	"respond.component.gallery",
+		"tag":		"RESPOND-GALLERY",
+		"title":	"Gallery",
+		"class":	"respond-gallery",
+		"icon":		"fa fa-th draggable",
+		"text":		"",
+		"config":	"plugins/component/config/gallery.html",
+		"script":	"plugins/component/respond.component.js"
+	},
+	{
 		"action":	"respond.component.video",
 		"tag":		"RESPOND-VIDEO",
 		"title":	"Video",
@@ -157,6 +167,36 @@
 		"icon":		"fa fa-map-marker draggable",
 		"text":		"",
 		"config":	"plugins/component/config/map.html",
+		"script":	"plugins/component/respond.component.js"
+	},
+	{
+		"action":	"respond.component.share",
+		"tag":		"RESPOND-SHARE",
+		"title":	"Share",
+		"class":	"respond-share",
+		"icon":		"fa fa-share-alt draggable",
+		"text":		"",
+		"config":	"plugins/component/config/share.html",
+		"script":	"plugins/component/respond.component.js"
+	},
+	{
+		"action":	"respond.component.badge",
+		"tag":		"RESPOND-BADGE",
+		"title":	"Badge",
+		"class":	"respond-badge",
+		"icon":		"fa fa-shield draggable",
+		"text":		"",
+		"config":	"plugins/component/config/badge.html",
+		"script":	"plugins/component/respond.component.js"
+	},
+	{
+		"action":	"respond.component.comments",
+		"tag":		"RESPOND-COMMENTS",
+		"title":	"Comments",
+		"class":	"respond-comments",
+		"icon":		"fa fa-comments draggable",
+		"text":		"",
+		"config":	"plugins/component/config/comments.html",
 		"script":	"plugins/component/respond.component.js"
 	},
 	{
@@ -228,6 +268,26 @@
 		"text":		"",
 		"config":	"plugins/component/config/shelf.html",
 		"script":	"plugins/component/respond.component.js"
+	},
+	{
+		"action":	"plugin.sample",
+		"tag":		"PLUGIN-SAMPLE",
+		"title":	"Sample Plugin",
+		"class":	"plugin-sample",
+		"icon":		"fa fa-certificate draggable",
+		"text":		"",
+		"config":	"plugins/sample/config/sample.html",
+		"script":	"plugins/sample/plugin.sample.js"
+	},
+	{
+		"action":	"respond.utility.fetch",
+		"tag":		"RESPOND-FETCH",
+		"title":	"Fetch",
+		"class":	"respond-fetch",
+		"icon":		"fa fa-magnet draggable",
+		"text":		"",
+		"config":	"plugins/utility/config/fetch.html",
+		"script":	"plugins/utility/respond.utility.js"
 	},
 	{
 		"action":	"respond.utility.load",

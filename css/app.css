@@ -397,6 +397,25 @@ body .modal-header{
 				padding-bottom: 5px;
 			}
 			
+		body .modal .form-group .sp-replacer{
+			position: absolute;
+			top: 25px;
+			right: 0;
+			border: 1px solid #ddd;
+			background-color: #fff;
+			border-left: 1px solid transparent;
+			background-color: #f8f8f8;
+			padding: 12px 0 12px 5px;
+		}	
+		
+			body .modal .form-group .sp-replacer .sp-dd{
+				display: none;	
+			}
+		
+			body .modal .form-group .sp-preview{
+				border: 1px solid #aaa;
+			}
+			
 	body .modal .modal-lg .modal-content{
 		min-height: 500px;
 	}
@@ -557,7 +576,7 @@ header.slideout{
         border-top: 1px solid #ccc;
     }
     
-    header.slideout li a{
+    header.slideout li>a{
     	font-family: "Roboto", sans-serif;
     	font-weight: 300;
         font-size: 16px;
@@ -567,7 +586,7 @@ header.slideout{
         font-size: 1.1em;
     }
     
-        header.slideout li a i{
+        header.slideout li>a i{
             display: inline-block !important;
             color: #aaa;
             margin-right: 10px;
@@ -583,7 +602,7 @@ header.slideout{
 	        	color: #fff;
         	}
     
-        header.slideout li a:hover{
+        header.slideout li>a:hover{
             list-style: none;
             color: #fff;
             text-decoration: none;
@@ -593,6 +612,20 @@ header.slideout{
             header.slideout li a:hover i{
                 color: #fff;
             }
+            
+	    header.slideout li small{
+		    display: block;
+		    padding: 0 5px 0 50px;
+	    }
+	    
+	    header.slideout li small.spacer{
+		    margin-top: 2px;
+	    }
+	    
+	    header.slideout li small label{
+		     color: #888;
+		     margin-right: 5px;
+	    }
 
 /* .main */
 section.main{
@@ -1411,6 +1444,7 @@ body .CodeMirror{
 
 	.branding .placeholder img{
 		max-height: 200px;
+		max-width: 500px;
 	}
 
 	.branding .placeholder{
@@ -1622,6 +1656,22 @@ body.configure > .ng-scope, body.configure > .ng-scope > div.ng-scope {
 .allow-breaks{
 	white-space: pre;
 }	
+
+/* system message */
+.system-message{
+	display: block;
+	text-align: center;
+	background-color: #8FBE00;
+	color: #fff;
+	padding: 10px 0;
+}
+
+	.system-message p{
+		margin: 0;
+		padding: 0;
+		text-transform: uppercase;
+		font-size: 13px;
+	}
 	
 /* Large desktop */
 @media (min-width: 1200px) { }

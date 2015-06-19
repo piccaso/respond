@@ -1,15 +1,45 @@
 <?php
 
+	/************************************/
+	/*  LOAD SETUP                      */
+	/************************************/
+
     // include optional local setup
-    if(file_exists(__DIR__.'/setup.local.php')){
-    	include 'setup.local.php';
+    if(file_exists('../setup.local.php')){
+    	include '../setup.local.php';
     }
     else{
-    	include 'setup.php';
+    	include '../setup.php';
     }
+    
+    
+    /************************************/
+	/*  DEBUGGING                       */
+	/************************************/
+    
+    // Debugging
+	define('DEBUG', false);
+
+	if(DEBUG){
+		error_reporting(E_ALL);
+		ini_set('display_errors', '1');
+	}
    
-    // include database objects
-	require_once 'db/DB.php';
+   
+	/************************************/
+	/*  Locations                       */
+	/************************************/
+   
+	// Locations of apps and sites
+	define('APP_LOCATION', '../');
+	define('SITES_LOCATION', '../sites');
+   
+   
+	/************************************/
+	/*  Data Access Objects             */
+	/************************************/
+   
+    require_once 'db/DB.php';
 	require_once 'db/User.php';
 	require_once 'db/Site.php';
 	require_once 'db/PageType.php';
@@ -21,6 +51,11 @@
 	require_once 'db/Version.php';
 	require_once 'db/Product.php';
 	
+	
+	/************************************/
+	/*  External Libraries              */
+	/************************************/
+	
 	// include external libs (via composer)
 	require 'vendor/autoload.php';
 
@@ -28,6 +63,7 @@
 	require_once 'libs/PasswordHash.php';
 	require_once 'libs/class-php-ico.php';
 	require_once 'libs/IpnListener.php';
+	require_once 'libs/simple_html_dom.php';
 	
 	// include libs
 	require_once 'libs/Utilities.php';
@@ -37,7 +73,11 @@
 	require_once 'libs/Image.php';
 	require_once 'libs/Publish.php';
 	
-	// include rest objects
+	
+	/************************************/
+	/*  REST Objects                    */
+	/************************************/
+	
 	require_once 'rest/page.php';
 	require_once 'rest/pageType.php';
 	require_once 'rest/theme.php';

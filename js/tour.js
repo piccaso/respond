@@ -5,7 +5,7 @@ var tour = {
 		// setup a tour
 		var tour = new Shepherd.Tour({
 		  defaults: {
-		    classes: 'shephed-element',
+		    classes: 'shepherd-element',
 		    scrollTo: true
 		  }
 		});
@@ -156,7 +156,7 @@ var tour = {
 		// setup a tour
 		var tour = new Shepherd.Tour({
 		  defaults: {
-		    classes: 'shephed-element',
+		    classes: 'shepherd-element',
 		    scrollTo: true
 		  }
 		});
@@ -435,7 +435,7 @@ var tour = {
 		  classes: 'pull-front no-arrow',
 		  buttons: [
 		    {
-		      text: i18n.t('Let\'s Do This!'),
+		      text: i18n.t("Let's Do This!"),
 		      classes: 'shepherd-button-primary',
 		      action: function() {
 		        return tour.hide();

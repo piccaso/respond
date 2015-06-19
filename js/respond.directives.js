@@ -134,7 +134,7 @@ angular.module('respond.directives', [])
     };
 })
 
-.directive('respondValidatePasscode', function(Setup) {
+.directive('respondValidatePasscode', function(App) {
     return {
         // attribute
         restrict: 'A',
@@ -155,16 +155,17 @@ angular.module('respond.directives', [])
 	       
 				var passcode = $el.val();
 				
-				if(passcode !== Setup.passcode){
-					$validating.hide();
-					$invalid.show();
-					return;
-				}
-				else{
-					$validating.hide();
-					$valid.show();
-				}
-					        	
+				// validate the passcode
+				App.validatePasscode(passcode, 
+					function(){ // valid 
+						$validating.hide();
+						$valid.show();
+					},
+					function(){ // in-valid
+						$validating.hide();
+						$invalid.show();
+						return;
+					});
 	        	
         	}); 	
           
@@ -250,15 +251,32 @@ angular.module('respond.directives', [])
     return {
         // attribute
         restrict: 'A',
-		scope: { 
+        scope: { 
 			current: '=' 
 		},
         link: function(scope, element, attrs) {
+        
+	            scope.$watch(function() {return element.attr('color'); }, function(newValue){
+	            	if(newValue != '' && newValue != null && newValue != undefined){
+		            	$(element).spectrum('set', newValue);
+		            }
+	            });
 	        
-	        	var val = attrs.color;
+	        	var defaultColor = attrs.color;
+	        	
+	        	if(defaultColor == '' || defaultColor == null || defaultColor == undefined){
+		        	defaultColor = '#FFFFFF';
+	        	}
+	        	
+	        	var action = 'default';
+	        	
+	        	// set action
+	        	if(attrs.action != '' && attrs.action != undefined){
+		        	action = attrs.action;
+	        	}
 	        	
         	 	$(element).spectrum({
-	        	 	color: val,
+	        	 	color: defaultColor,
 	        	 	showInput: true,
 					showInitial: true,
 					showPalette: true,
@@ -279,8 +297,7 @@ angular.module('respond.directives', [])
         	 		beforeShow: function(){
 	        	 		utilities.selection = utilities.saveSelection();
 	        	 		
-	        	 		console.log('set selection');
-        	 		},
+	        	 	},
         	 		change: function(color) {
 					    
 					    // restore selection
@@ -298,22 +315,76 @@ angular.module('respond.directives', [])
 						 	var colorString = color.toRgbString();   
 					    }
 					    
-					    // apply
-					    scope.$apply(
-						    function(){
-							    
-							    if(scope.current !== undefined){
-							    	scope.current.selected = colorString;
+					    // set textcolor for element
+					    if(action == 'editor.element.textcolor'){				    
+						    // get page scope
+						    var pageScope = angular.element($("section.main")).scope();
+			
+							pageScope.$apply(function(){
+								 if(pageScope.block !== undefined){
+									 pageScope.node.textcolor = colorString;
+								 }
+							});
+						}
+						else if(action == 'editor.element.textshadowcolor'){				    
+						    // get page scope
+						    var pageScope = angular.element($("section.main")).scope();
+			
+							pageScope.$apply(function(){
+								 if(pageScope.block !== undefined){
+									 pageScope.node.textshadowcolor = colorString;
+								 }
+							});							
+						}
+						else if(action == 'editor.block.backgroundcolor'){				    
+						    // get page scope
+						    var pageScope = angular.element($("section.main")).scope();
+			
+							pageScope.$apply(function(){
+								 if(pageScope.block !== undefined){
+									 pageScope.block.backgroundColor = colorString;
+								 }
+							});							
+						}
+						else if(action == 'configure.current'){
+							// apply
+							scope.$apply(
+							    function(){
+								    
+								    if(scope.current !== undefined){
+								    	scope.current.selected = colorString;
+								    }
 							    }
-						    }
-					    )
-
-					    // execute forecolor (always hex)
-					    document.execCommand('foreColor', false, color.toHexString());
+							)
+						}
+						else if(action == 'target'){
+							$(attrs.target).val(colorString);
+						}
+						else{
+					    
+						    // execute forecolor (always hex)
+						    document.execCommand('foreColor', false, color.toHexString());
+						    
+					    }
 					}
         	 	});          
         }
     };
+})
+
+.directive('restrict', function($parse) {
+    return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function(scope, iElement, iAttrs, controller) {
+            scope.$watch(iAttrs.ngModel, function(value) {
+                if (!value) {
+                    return;
+                }
+                $parse(iAttrs.ngModel).assign(scope, value.replace(new RegExp(iAttrs.restrict, 'g'), ''));
+            });
+        }
+    }
 })
 
 .directive('qrcode', ['$window', function($window) {

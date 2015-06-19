@@ -12,6 +12,13 @@ angular.module('respond.controllers', [])
 	$scope.friendlyId = $stateParams.id;
 	$window.sessionStorage.loginId = $stateParams.id;
 	
+	// set system message
+	$scope.showSystemMessage = false;
+	
+	if(Setup.systemMessage != ''){
+		$scope.showSystemMessage = true;
+	}
+	
 	// login
 	$scope.login = function(user){
 	
@@ -40,6 +47,7 @@ angular.module('respond.controllers', [])
 					// set firstLogin
 					$rootScope.firstLogin = data.firstLogin;
 					$rootScope.introTourShown = false;
+					$rootScope.expiredTourShown = false;
 					$rootScope.editorTourShown = false;
 					
 					// retrieve site
@@ -97,7 +105,7 @@ angular.module('respond.controllers', [])
 					
 				}
 				else{
-					console.log('[respond.error] user does not have admin privileges');
+					if(Setup.debug)console.log('[respond.error] user does not have admin privileges');
 					message.showMessage('error');
 				}
 				
@@ -107,6 +115,29 @@ angular.module('respond.controllers', [])
 			});
 		
 	};
+	
+})
+
+// info controller
+.controller('InfoCtrl', function($scope, $window, $state, $stateParams, $rootScope, $i18next, Setup, User, Site, Editor) {
+	
+	$rootScope.template = 'login';
+	
+	// setup
+	$scope.setup = Setup;
+	
+	// get friendlyId
+	$scope.friendlyId = $stateParams.id;
+	$window.sessionStorage.loginId = $stateParams.id;
+	$scope.loginLink = utilities.replaceAll(Setup.login, '{{friendlyId}}', $scope.friendlyId);
+	$scope.siteLink = utilities.replaceAll(Setup.site, '{{friendlyId}}', $scope.friendlyId);
+	
+	// set system message
+	$scope.showSystemMessage = false;
+	
+	if(Setup.systemMessage != ''){
+		$scope.showSystemMessage = true;
+	}
 	
 })
 
@@ -286,7 +317,7 @@ angular.module('respond.controllers', [])
 		// make sure that x was found
 		if(x == -1){
 			 message.showMessage('error');
-			 console.log('[Triangulate.error] could not find plan');
+			 if(Setup.debug)console.log('[Respond.error] could not find plan');
 			 return;
 		}
 		
@@ -309,7 +340,7 @@ angular.module('respond.controllers', [])
 	
 		// set data for transaction
 		var data = {
-			'item_name':		'Triangulate Subscription - ' + plan.desc + ' (' + $scope.temp.domain + ')',
+			'item_name':		plan.desc + ' (' + $scope.temp.domain + ')',
 			'email':			email,
 			'cmd':				'_xclick-subscriptions',
 			'currency_code': 	currency,
@@ -387,7 +418,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] Site.listAll');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.sites = data;
 	});
@@ -440,8 +471,45 @@ angular.module('respond.controllers', [])
 	
 })
 
+// install controller
+.controller('InstallCtrl', function($scope, $rootScope, Setup, App) {
+	
+	$rootScope.template = 'login';
+	
+	// setup
+	$scope.setup = Setup;
+	$scope.appurl = 'http://app.myrespond.com';
+	$scope.dbname = 'respondtest';
+	$scope.dbuser = '';
+	$scope.dbpass = '';
+	
+	// default
+	$('#install-form').removeClass('hidden');
+	$('#install-confirmation').addClass('hidden');
+		
+	// installs a site
+	$scope.install = function(){
+		
+		message.showMessage('progress');
+		
+		// create the site
+		App.install($scope.appurl, $scope.dbname, $scope.dbuser, $scope.dbpass,
+			function(){  // success
+			
+				$('#install-form').addClass('hidden');
+				$('#install-confirmation').removeClass('hidden');
+			
+				message.showMessage('success');
+			},
+			function(){  // failure
+				message.showMessage('error');
+			});
+	}
+	
+})
+
 // create controller
-.controller('CreateCtrl', function($scope, $rootScope, Setup, Theme, Language, Site) {
+.controller('CreateCtrl', function($scope, $rootScope, $state, Setup, Theme, Language, Site) {
 	
 	$rootScope.template = 'login';
 	
@@ -454,6 +522,19 @@ angular.module('respond.controllers', [])
 		interval: false,
 		wrap: true
 	});
+	
+	// set system message
+	$scope.showSystemMessage = false;
+	
+	if(Setup.systemMessage != ''){
+		$scope.showSystemMessage = true;
+	}
+	
+	$scope.loginUrl = function(){
+		
+		return utilities.replaceAll(Setup.login, '{{friendlyId}}', $scope.friendlyId);
+		
+	}
 	
 	// determine timezone
 	var tz = jstz.determine();
@@ -505,7 +586,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] Theme.list');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.themes = data;
 	});
@@ -515,7 +596,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] Language.list');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.languages = data;
 	});
@@ -534,16 +615,15 @@ angular.module('respond.controllers', [])
 			$scope.siteLanguage, $scope.userLanguage, $scope.themeId, $scope.firstName, $scope.lastName,
 			function(){  // success
 				message.showMessage('success');
-				
-				$scope.siteLink = utilities.replaceAll(Setup.site, '{{friendlyId}}', $scope.friendlyId);
-				
-				$('#create-form').addClass('hidden');
-				$('#create-confirmation').removeClass('hidden');
+		
+				// go to info
+				$state.go('info', {'id': $scope.friendlyId});
 			},
 			function(){  // failure
 				message.showMessage('error');
 			});
 	}
+	
 	
 })
 
@@ -554,6 +634,7 @@ angular.module('respond.controllers', [])
 	$scope.user = $rootScope.user;
 	$scope.site = $rootScope.site;
 	$scope.sites = Setup.sites;
+	$scope.setup = Setup;
 	
 	// logs a user out of the site
 	$scope.logout = function(){
@@ -575,6 +656,12 @@ angular.module('respond.controllers', [])
 		
 		Site.publish(
 			function(){  // success
+				
+				// set version
+				$rootScope.site.Version = Setup.version;
+				$scope.site.Version = Setup.version;
+				
+				// show success
 				message.showMessage('success');
 			},
 			function(){  // failure
@@ -601,10 +688,11 @@ angular.module('respond.controllers', [])
 })
 
 // pages controller
-.controller('PagesCtrl', function($scope, $rootScope, $i18next, Setup, PageType, Page, Stylesheet, Layout, User, Translation) {
+.controller('PagesCtrl', function($scope, $rootScope, $state, $i18next, Setup, PageType, Page, Stylesheet, Layout, User, Translation) {
 
 	// retrieve user
 	$scope.user = $rootScope.user;
+	$scope.site = $rootScope.site;
 	$rootScope.template = 'pages';
 	$scope.canEditTypes = false;
 	$scope.canRemovePage = false;
@@ -627,6 +715,10 @@ angular.module('respond.controllers', [])
 		$scope.canEditTypes = true;
 	}
 	
+	$scope.signUp = function(){
+		$state.go('app.signup');
+	}
+	
 	// sets the pageTypeId
 	$scope.setPageType = function(pageType){
 		$scope.current = pageType;
@@ -636,6 +728,14 @@ angular.module('respond.controllers', [])
 		// set canremove for pagetype
 		if($scope.user.CanRemove == 'All' || $scope.user.CanRemove.indexOf($scope.pageTypeId) != -1){
 			$scope.canRemovePage = true;
+		}
+		
+		// show the expired tour
+		if($scope.site.Status == 'Trial'){
+			if($scope.isTrialOver() == true && $rootScope.expiredTourShown == false){
+				tour.expired();
+				$rootScope.expiredTourShown = true;
+			}
 		}
 		
 	}
@@ -664,7 +764,12 @@ angular.module('respond.controllers', [])
 	$scope.showAddPageType = function(){
 	
 		// set temporary model
-		$scope.temp = null;
+		$scope.temp = {
+			'FriendlyId': '',
+			'Layout': '',
+			'Stylesheet': '',
+			'IsSecure': 0,
+		};
 	
 		$('#pageTypeDialog').modal('show');
     	
@@ -823,7 +928,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] PageType.listAllowed');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.pageTypes = data;
 		
@@ -889,6 +994,26 @@ angular.module('respond.controllers', [])
 		tour.intro();
 	}
 	
+	// determines if the trial is over
+	$scope.isTrialOver = function(){
+		
+		var length = $scope.setup.trialLength;
+		var now = moment.utc();
+
+    	var st = moment.utc($scope.site.Created, 'YYYY-MM-DD HH:mm:ss');
+		
+		var difference = length - now.diff(st, 'days');
+		
+		// expired when the difference is less then 0
+		if(difference < 0){
+			return true;
+		}
+		else{
+			return false;
+		}
+		
+	}
+	
 	
 })
 
@@ -904,6 +1029,7 @@ angular.module('respond.controllers', [])
 	$scope.sites = Setup.sites;
 	$scope.node = {};
 	$scope.element = {};
+	$scope.parent = {};
 	$scope.block = {};
 	$scope.container = {};
 	$scope.column1 = {};
@@ -915,6 +1041,7 @@ angular.module('respond.controllers', [])
 	$scope.fileLimit = $rootScope.site.FileLimit;
 	$scope.isModified = false;
 	$scope.snippets = null;
+	$scope.site = $rootScope.site;
 	
 	// watch for changes in the block collection
     $scope.$watchCollection('block', function(newValues, oldValues){
@@ -926,6 +1053,7 @@ angular.module('respond.controllers', [])
 	  		
 	  			if(index.toLowerCase() == 'id'){
 		  			$(respond.editor.currBlock).prop('id', attr);
+		  			$(respond.editor.currBlock).find('.block-actions span').text('#' + attr);
 	  			}
 	  		
 	  			$(respond.editor.currBlock).attr('data-' + index.toLowerCase(), attr);
@@ -1027,7 +1155,7 @@ angular.module('respond.controllers', [])
 		  		// set new values
 		  		if(index != 'sortableItem'){
 		  		
-		  			console.log('$watch, set index=' + index +' to attr=' + attr);
+		  			if(Setup.debug)console.log('$watch, set index=' + index +' to attr=' + attr);
 		  		
 		  			// set corresponding data attribute
 		  			$(respond.editor.currNode).attr('data-' + index, attr);
@@ -1058,7 +1186,6 @@ angular.module('respond.controllers', [])
 		  		// set new values
 		  		if(index != 'sortableItem'){
 		  		
-		  			console.log('$watch, set index=' + index +' to attr=' + attr);
 		  		
 		  			// set corresponding data attribute
 		  			$(respond.editor.currElement).attr('data-' + index, attr);
@@ -1069,6 +1196,37 @@ angular.module('respond.controllers', [])
 		  			if(respond.editor.currConfig){
 		  				// create eventName
 		  				var eventName = respond.editor.currConfig.attr('data-action') + '.element.' + index + '.change';
+		  			
+		  				// trigger change
+		  				$(respond.editor.el).trigger(eventName, {index: index, attr: attr});
+		  			}
+		  		}
+	  		}
+	  		
+  		});
+    	
+    });
+    
+    // watch for changes in the parent collection
+    $scope.$watchCollection('parent', function(newValues, oldValues){
+    	
+    	$.each(newValues, function(index, attr){	
+	  		
+	  		// check for changes
+	  		if(newValues[index] != oldValues[index]){
+	  		
+		  		// set new values
+		  		if(index != 'sortableItem'){
+		  		
+		  			// set corresponding data attribute
+		  			$(respond.editor.currElement).parent().attr('data-' + index, attr);
+		  			
+		  			// set config-text convenience method
+		  			$(respond.editor.currElement).parent().find('[parent-text="' + index + '"]').text(attr);
+		  			
+		  			if(respond.editor.currConfig){
+		  				// create eventName
+		  				var eventName = respond.editor.currConfig.attr('data-action') + '.parent.' + index + '.change';
 		  			
 		  				// trigger change
 		  				$(respond.editor.el).trigger(eventName, {index: index, attr: attr});
@@ -1091,6 +1249,14 @@ angular.module('respond.controllers', [])
     
 	// get pageId
 	$scope.pageId = $stateParams.id;
+	
+	// shows the images dialog
+	$scope.showAddImage = function(action){
+	
+		$scope.retrieveImages();
+		$('#imagesDialog').attr('data-action', action);
+		$('#imagesDialog').modal('show');
+	}
 	
 	// save & publish
 	$scope.saveAndPublish = function(){
@@ -1136,6 +1302,7 @@ angular.module('respond.controllers', [])
 			Translation.add(pageId, 'name', $scope.page.Name);
 			Translation.add(pageId, 'url', $scope.page.Url);
 			Translation.add(pageId, 'description', $scope.page.Description);
+			Translation.add(pageId, 'includeOnly', $scope.page.IncludeOnly);
 			
 			// walkthrough translations
 			for(var key in translations){
@@ -1362,7 +1529,7 @@ angular.module('respond.controllers', [])
 		
 				// debugging
 				if(Setup.debug)console.log('[respond.debug] PageType.listAll');
-				console.log(data);
+				if(Setup.debug)console.log(data);
 				
 				$scope.pageTypes = data;
 			}
@@ -1383,7 +1550,7 @@ angular.module('respond.controllers', [])
 			
 				// debugging
 				if(Setup.debug)console.log('[respond.debug] Image.list');
-				console.log(data);
+				if(Setup.debug)console.log(data);
 				
 				$scope.images = data;
 			});
@@ -1393,7 +1560,7 @@ angular.module('respond.controllers', [])
 			
 				// debugging
 				if(Setup.debug)console.log('[respond.debug] File.retrieveSize');
-				console.log(data);
+				if(Setup.debug)console.log(data);
 				
 				$scope.totalSize = parseFloat(data);
 			});
@@ -1427,7 +1594,7 @@ angular.module('respond.controllers', [])
 		
 			// debugging
 			if(Setup.debug)console.log('[respond.debug] File.list');
-			console.log(data);
+			if(Setup.debug)console.log(data);
 			
 			$scope.files = data;
 			$scope.loading = false;
@@ -1438,7 +1605,7 @@ angular.module('respond.controllers', [])
 		
 			// debugging
 			if(Setup.debug)console.log('[respond.debug] File.retrieveSize');
-			console.log(data);
+			if(Setup.debug)console.log(data);
 			
 			$scope.totalSize = parseFloat(data);
 		});
@@ -1452,7 +1619,7 @@ angular.module('respond.controllers', [])
 		
 			// debugging
 			if(Setup.debug)console.log('[respond.debug] File.listDownloads');
-			console.log(data);
+			if(Setup.debug)console.log(data);
 			
 			$scope.downloads = data;
 			$scope.loading = false;
@@ -1467,7 +1634,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] MenuType.list');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.menuTypes = data;
 	});
@@ -1475,9 +1642,17 @@ angular.module('respond.controllers', [])
 	// retrieve pre-cached editor items
 	$scope.editorItems = $rootScope.editorItems;
 	
-	// setup flipsnap
-	var fs = Flipsnap('.editor-actions div', {distance: 400, maxPoint:3});
-    
+	// setup fs
+	var fs = null;
+		
+	// for ltr
+	if($('html[dir=rtl]').length > 0){
+		fs = Flipsnap('.editor-actions div', {distance: -400, maxPoint:3});
+	}
+	else{
+		fs = Flipsnap('.editor-actions div', {distance: 400, maxPoint:3});
+	}
+	
     $('.fs-next').on('click', function(){
         fs.toNext(); 
         
@@ -1512,14 +1687,16 @@ angular.module('respond.controllers', [])
         else{
             $('.fs-next').hide();
         }
-    }); 
+    });
+	 
     
     // setup editor
 	var editor = respond.editor.setup({
 	    			el: $('#respond-editor'),
 	    			pageId: $stateParams.id,
 	    			api: Setup.api,
-	    			menu: $scope.editorItems
+	    			menu: $scope.editorItems,
+	    			imagesUrl: $scope.site.ImagesUrl
 				});
 
 	setTimeout(function(){
@@ -1532,7 +1709,7 @@ angular.module('respond.controllers', [])
 		Image.list(function(data){
 			// debugging
 			if(Setup.debug)console.log('[respond.debug] Image.list');
-			console.log(data);
+			if(Setup.debug)console.log(data);
 			
 			$scope.images = data;
 		});
@@ -1548,18 +1725,41 @@ angular.module('respond.controllers', [])
 	$scope.addImage = function(image){
 	
 		var plugin = $('#imagesDialog').attr('data-plugin');
-		var action= $('#imagesDialog').attr('data-action');
+		var action = $('#imagesDialog').attr('data-action');
+		
+		if(action == undefined){
+			action = '';
+		}
 		
 		// add or edit the image
-		if(action != undefined && action == 'edit'){
+		if(action == 'edit'){
 			var fn = plugin + '.editImage';
+			
+			// execute method
+			utilities.executeFunctionByName(fn, window, image);
 		}
-		else{
+		else if(action == 'add'){
 			var fn = plugin + '.addImage';
+			
+			// execute method
+			utilities.executeFunctionByName(fn, window, image);
+		}
+		else if(action == 'block'){
+			
+			var src = image.fullUrl;
+			
+			// removes the domain from the img
+	  		if(src != ''){
+		  		var parts = src.split('files/');
+		  		src = 'files/' + parts[1];
+	  		}
+		
+			$scope.block.backgroundImage = src;
+			
+			$('#imagesDialog').modal('hide');
 		}
 		
-		// execute method
-		utilities.executeFunctionByName(fn, window, image);
+		
 	}
 	
 	// add external image
@@ -1621,7 +1821,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] Image.list');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.icons = data;
 	});
@@ -1631,7 +1831,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] Layout.list');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.layouts = data;
 	});
@@ -1641,7 +1841,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] Stylesheet.list');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.stylesheets = data;
 	});
@@ -1671,6 +1871,41 @@ angular.module('respond.controllers', [])
 	
 		Product.clear($scope.pageId, function(data){});
 	}				
+
+	// enable/disable for trial
+	$scope.disableAfterTrial = function(){
+		
+		// disable after trial
+		if($scope.site.Status == 'Trial'){
+		
+			if($scope.setup.disableAfterTrial == true){
+				
+				var length = $scope.setup.trialLength;
+				var now = moment.utc();
+	    
+		    	var st = moment.utc($scope.site.Created, 'YYYY-MM-DD HH:mm:ss');
+				
+				var difference = length - now.diff(st, 'days');
+				
+				// expired when the difference is less then 0
+				if(difference < 0){
+					return true;
+				}
+				else{
+					return false;
+				}
+				
+			}
+			else{
+				return false;
+			}
+		
+		}
+		else{
+			return false;
+		}
+		
+	}
 
 	// show the editor tour automatically during initial user session
 	$scope.setupTour = function(){
@@ -1722,7 +1957,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] MenuType.list');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.menuTypes = data;
 	});
@@ -1732,7 +1967,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] MenuItem.list');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.menuItems = data;
 		$scope.loading = false;
@@ -1951,7 +2186,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] Layout.list');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.files = data;
 		
@@ -2051,7 +2286,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] Script.list');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.files = data;
 		
@@ -2155,7 +2390,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] Stylesheet.list');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.files = data;
 		
@@ -2263,8 +2498,6 @@ angular.module('respond.controllers', [])
 		
 		if(prev){
 			prev = Number($(prev).val().replace(/[^0-9\.]+/g, ''));
-			
-			console.log(prev);
 			
 			if(to < prev){
 				$(this).addClass('error');
@@ -2408,7 +2641,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] Theme.list');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.themes = data;
 	});
@@ -2564,7 +2797,7 @@ angular.module('respond.controllers', [])
 		Image.list(function(data){
 			// debugging
 			if(Setup.debug)console.log('[respond.debug] Image.list');
-			console.log(data);
+			if(Setup.debug)console.log(data);
 			
 			$scope.images = data;
 		});
@@ -2575,7 +2808,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] File.retrieveSize');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.totalSize = parseFloat(data);
 	});
@@ -2618,6 +2851,7 @@ angular.module('respond.controllers', [])
 	$scope.type = null;
 	$scope.site = null;
 	$scope.logoUrl = null;
+	$scope.altLogoUrl = null;
 	$scope.payPalLogoUrl = null;
 	$scope.iconUrl = null;
 	$scope.totalSize = 0;
@@ -2632,6 +2866,10 @@ angular.module('respond.controllers', [])
     
     if($scope.site.PayPalLogoUrl != null){
 		$scope.payPalLogoUrl = $scope.site.ImagesUrl + 'files/' + $scope.site.PayPalLogoUrl;
+	}
+	
+	if($scope.site.AltLogoUrl != null){
+		$scope.altLogoUrl = $scope.site.ImagesUrl + 'files/' + $scope.site.AltLogoUrl;
 	}
 	
 	if($scope.site.IconUrl != null){
@@ -2650,7 +2888,7 @@ angular.module('respond.controllers', [])
 		Image.list(function(data){
 			// debugging
 			if(Setup.debug)console.log('[respond.debug] Image.list');
-			console.log(data);
+			if(Setup.debug)console.log(data);
 			
 			$scope.images = data;
 		});
@@ -2661,7 +2899,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] File.retrieveSize');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.totalSize = parseFloat(data);
 	});
@@ -2693,6 +2931,9 @@ angular.module('respond.controllers', [])
 			}
 			else if($scope.type == 'paypal'){
 				$scope.payPalLogoUrl = $scope.site.ImagesUrl + 'files/' + image.filename;
+			}
+			else if($scope.type == 'alt'){
+				$scope.altLogoUrl = $scope.site.ImagesUrl + 'files/' + image.filename;
 			}
 			else if($scope.type == 'icon'){
 				$scope.iconUrl = $scope.site.ImagesUrl + 'files/' + image.filename;
@@ -2737,7 +2978,7 @@ angular.module('respond.controllers', [])
 	
 	$scope.updateFiles = function(){
 	
-		console.log('[respond.test] updateFiles(), folder = ' + $scope.folder);
+		if(Setup.debug)console.log('[respond.test] updateFiles(), folder = ' + $scope.folder);
 	
 		if($scope.folder == 'files'){
 		
@@ -2746,7 +2987,7 @@ angular.module('respond.controllers', [])
 			
 				// debugging
 				if(Setup.debug)console.log('[respond.debug] File.list');
-				console.log(data);
+				if(Setup.debug)console.log(data);
 				
 				$scope.files = data;
 				$scope.loading = false;
@@ -2759,7 +3000,7 @@ angular.module('respond.controllers', [])
 			
 				// debugging
 				if(Setup.debug)console.log('[respond.debug] Download.list');
-				console.log(data);
+				if(Setup.debug)console.log(data);
 				
 				$scope.files = data;
 				$scope.loading = false;
@@ -2772,7 +3013,7 @@ angular.module('respond.controllers', [])
 		
 			// debugging
 			if(Setup.debug)console.log('[respond.debug] File.retrieveSize');
-			console.log(data);
+			if(Setup.debug)console.log(data);
 			
 			$scope.totalSize = parseFloat(data);
 		});
@@ -2821,7 +3062,7 @@ angular.module('respond.controllers', [])
 })
 
 // users controller
-.controller('UsersCtrl', function($scope, $rootScope, Setup, User, Role, Language, Image) {
+.controller('UsersCtrl', function($scope, $rootScope, Setup, User, Role, Language, Image, File) {
 	
 	$rootScope.template = 'users';
 	
@@ -2831,13 +3072,15 @@ angular.module('respond.controllers', [])
 	$scope.temp = null;
 	$scope.userLimit = $rootScope.site.UserLimit;
 	$scope.canAdd = false;
+	$scope.totalSize = 0;
+	$scope.fileLimit = $rootScope.site.FileLimit;
 	
 	// list users
 	User.list(function(data){
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] User.list');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.users = data;
 		$scope.loading = false;
@@ -2852,7 +3095,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] Language.list');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.languages = data;
 	});
@@ -2862,7 +3105,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] Role.list');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		// push admin, contributor and member
 		data.push({
@@ -2985,9 +3228,19 @@ angular.module('respond.controllers', [])
 		Image.list(function(data){
 			// debugging
 			if(Setup.debug)console.log('[respond.debug] Image.list');
-			console.log(data);
+			if(Setup.debug)console.log(data);
 			
 			$scope.images = data;
+		});
+		
+		// get file size
+		File.retrieveSize(function(data){
+		
+			// debugging
+			if(Setup.debug)console.log('[respond.debug] File.retrieveSize');
+			if(Setup.debug)console.log(data);
+			
+			$scope.totalSize = parseFloat(data);
 		});
 	}
 	
@@ -3066,7 +3319,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] Role.list');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.roles = data;
 		$scope.loading = false;
@@ -3077,7 +3330,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] PageType.list');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.pageTypes = data;
 	});
@@ -3197,7 +3450,7 @@ angular.module('respond.controllers', [])
 		
 		// get permissions 
 		if($('.chk-'+type+'-all').prop('checked')){
-			canView = 'All';
+			canDo = 'All';
 		}
 		else{
 			var checks = $('.chk-' + type);
@@ -3331,7 +3584,7 @@ angular.module('respond.controllers', [])
 		
 			// debugging
 			if(Setup.debug)console.log('[respond.debug] Translation.list');
-			console.log(data);
+			if(Setup.debug)console.log(data);
 			
 			$scope.locales = data;
 			
@@ -3435,7 +3688,7 @@ angular.module('respond.controllers', [])
 	
 		// debugging
 		if(Setup.debug)console.log('[respond.debug] Language.list');
-		console.log(data);
+		if(Setup.debug)console.log(data);
 		
 		$scope.languages = data;
 	});

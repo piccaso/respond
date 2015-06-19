@@ -28,6 +28,54 @@ angular.module('respond.factories', [])
 	};
 })
 
+
+// app factory
+.factory('App', function($http, Setup){
+	
+	var app = {};
+	app.data = [];
+	
+	// validate email for a site
+	app.validatePasscode = function(passcode, successCallback, failureCallback){
+	
+		// set params
+		var params = {
+			passcode: passcode
+		}
+	
+		// set post to URL Encoded
+		$http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
+	
+		// post to API
+		$http.post(Setup.api + '/app/validate/passcode', $.param(params))
+			.success(successCallback)
+			.error(failureCallback);
+	}
+	
+	// installs the application
+	app.install = function(appurl, dbname, dbuser, dbpass, successCallback, failureCallback){
+	
+		// set params
+		var params = {
+			appurl: appurl,
+			dbname: dbname,
+			dbuser: dbuser,
+			dbpass: dbpass
+		}
+	
+		// set post to URL Encoded
+		$http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
+	
+		// post to API
+		$http.post(Setup.api + '/app/install', $.param(params))
+			.success(successCallback)
+			.error(failureCallback);
+	}
+	
+	return app;
+	
+})
+
 // site factory
 .factory('Site', function($http, Setup){
 	
@@ -154,7 +202,7 @@ angular.module('respond.factories', [])
 	
 	// saves settings for the site
 	site.save = function(site, successCallback, failureCallback){
-			
+	
 		// set params
 		var params = { 
 			name: site.Name, 
@@ -168,6 +216,7 @@ angular.module('respond.factories', [])
 			showSettings: site.ShowSettings,
 			showLanguages: site.ShowLanguages,
 			showLogin: site.ShowLogin,
+			showSearch: site.ShowSearch,
 			urlMode: site.UrlMode,
 			weightUnit: site.WeightUnit,
 			shippingCalculation: site.ShippingCalculation,

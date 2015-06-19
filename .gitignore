@@ -3,16 +3,15 @@
 #################
 
 api/setup.local.php
+setup.local.php
 
 info.php
 
 themes/premium
 themes/premium/*
 
-api/composer.lock
-api/composer.phar
-api/vendor
-api/vendor/*
+composer.lock
+composer.phar
 
 sites/*
 

@@ -16,6 +16,7 @@ respond.component.slideshow = {
 			scope.retrieveImages();
 		
 			$('#imagesDialog').attr('data-plugin', 'respond.component.slideshow');
+			$('#imagesDialog').attr('data-action', 'add');
 			$('#imagesDialog').modal('show');
 			
 			// reset modal
@@ -69,9 +70,7 @@ respond.component.slideshow = {
 		var node = $(respond.editor.currNode);
 		
 		// build html
-		var html = '<span class="image"><img src="' + image.fullUrl + '" title="" data-location="' + location + '">' +
-				   '<span class="caption"><input type="text" value="" placeholder="' + i18n.t('Enter caption') + '" maxwidth="140"></span>' +
-				   '<a class="remove-image fa fa-minus-circle"></a></span>';
+		var html = '<span class="image"><img class="respond-element" src="' + image.fullUrl + '" title="" data-location="' + location + '"></span>';
 				   
 		$(node).find('.images').append(html);
 		
@@ -105,6 +104,7 @@ respond.component.slideshow = {
 		attrs['data-wrap'] = 'true';
 		attrs['data-pauseonhover'] = 'true';
 		attrs['data-transition'] = 'slide';
+		attrs['data-position'] = 'default';
 		
 		// append element to the editor
 		respond.editor.append(
@@ -143,6 +143,11 @@ respond.component.slideshow = {
 			var title = $(imgs[y]).attr('title');
 			var src = $(imgs[y]).attr('src');
 			var location = $(imgs[y]).attr('data-location');
+			var headline = $(imgs[y]).attr('data-headline') || '';
+			var caption = $(imgs[y]).attr('data-caption') || '';
+			var button = $(imgs[y]).attr('data-button') || '';
+			var link = $(imgs[y]).attr('data-link') || '';
+			var cssclass = $(imgs[y]).attr('class') || '';
 	
 			// get scope from page
 			var scope = angular.element($("section.main")).scope();
@@ -153,15 +158,16 @@ respond.component.slideshow = {
 			// replace the images URL with the URL from the site
 			src = utilities.replaceAll(src, '{{site.ImagesUrl}}', url);
 			
-			var image = '<img src="' + src + '" title="' + title + '" data-location="' + location + '">';
+			var image = '<img class="respond-element" src="' + src + '" title="' + title + '" ' + 
+				'data-headline="' + headline + '" ' +
+				'data-caption="' + caption + '" ' +
+				'data-button="' + button + '" ' +
+				'data-link="' + link + '" ' +
+				'data-cssclass="' + cssclass + '" ' +
+				'data-location="' + location + '">';
 			
 			// build html
-			html +=	'<span class="image">' + image + 
-					'<span class="caption">' +
-					'<input type="text" value="' + title + '" placeholder="' + i18n.t('Enter caption') + '" maxwidth="140">' +
-					'</span>' +
-					'<a class="remove-image fa fa-minus-circle"></a>' +
-					'</span>';
+			html +=	'<span class="image">' + image + '</span>';
 		
 		}			
 
@@ -180,6 +186,7 @@ respond.component.slideshow = {
 		attrs['data-wrap'] = $(node).attr('wrap');
 		attrs['data-pauseonhover'] = $(node).attr('pauseonhover');
 		attrs['data-transition'] = $(node).attr('transition');
+		attrs['data-position'] = $(node).attr('position') || 'default';
 		
 		// return element
 		return utilities.element('div', attrs, html);
@@ -205,6 +212,12 @@ respond.component.slideshow = {
   			if(location == undefined || location == null){
 	  			location = 'local';
   			}
+  			
+  			var headline = $(imgs[y]).attr('data-headline') || '';
+  			var caption = $(imgs[y]).attr('data-caption')|| '';
+  			var button = $(imgs[y]).attr('data-button')|| '';
+  			var link = $(imgs[y]).attr('data-link')|| '';
+  			var cssclass = $(imgs[y]).attr('data-cssclass')|| '';
   		
   			if(location == 'local'){
 	  			// removes the domain from the img
@@ -213,10 +226,22 @@ respond.component.slideshow = {
 			  		src = 'files/' + parts[1];
 		  		}
 	  			
-	  			var image = '<img src="{{site.ImagesUrl}}' + src + '" title="' + title + '" data-location="local">';
+	  			var image = '<img src="{{site.ImagesUrl}}' + src + '" title="' + title + '" ' +
+	  							'class="' + cssclass + '" ' + 
+	  							'data-headline="' + headline + '" ' +
+								'data-caption="' + caption + '" ' +
+								'data-button="' + button + '" ' +
+								'data-link="' + link + '" ' +
+	  							'data-location="local">';
   			}
   			else{
-	  			var image = '<img src="' + src + '" title="' + title + '" data-location="external">';
+	  			var image = '<img src="' + src + '" title="' + title + '" ' + 
+	  							'class="' + cssclass + '" ' +
+	  							'data-headline="' + headline + '" ' +
+								'data-caption="' + caption + '" ' +
+								'data-button="' + button + '" ' +
+								'data-link="' + link + '" ' +
+	  							'" data-location="external">';
   			}
   			
 			html += '<div>' + image + '</div>';
@@ -232,6 +257,7 @@ respond.component.slideshow = {
 		attrs['wrap'] = $(node).attr('data-wrap');
 		attrs['pauseonhover'] = $(node).attr('data-pauseonhover');
 		attrs['transition'] = $(node).attr('data-transition');
+		attrs['position'] = $(node).attr('data-position') || 'default';
 		
 		// return element
 		return utilities.element('respond-slideshow', attrs, html);
@@ -608,7 +634,7 @@ respond.component.content = {
 	parse:function(node){
 	
 		// get params
-		var id = $(node).attr('id');
+		var id = $(node).attr('contentid');
 		var url = $(node).attr('url');
 		
 		// build html
@@ -620,7 +646,7 @@ respond.component.content = {
 		attrs['id'] = id;
 		attrs['data-id'] = id;
 		attrs['class'] = 'respond-content';
-		attrs['data-cssclass'] = $(node).attr('class');
+		attrs['data-cssclass'] = $(node).attr('cssclass');
 		attrs['data-url'] = $(node).attr('url');
 		
 		// return element
@@ -633,8 +659,8 @@ respond.component.content = {
 
 		// tag attributes
 		var attrs = [];
-		attrs['id'] = $(node).attr('data-id');
-		attrs['class'] = $(node).attr('data-cssclass');
+		attrs['contentid'] = $(node).attr('data-id');
+		attrs['cssclass'] = $(node).attr('data-cssclass');
 		attrs['url'] = $(node).attr('data-url');
 		
 		// return element
@@ -738,6 +764,8 @@ respond.component.html = {
 
 	init:function(){
 		
+		$(document).off('click', '.respond-html div');
+		
 		// handle html div click
 		$(document).on('click', '.respond-html div', function(){
 			$(this).parent().toggleClass('active');	
@@ -792,7 +820,7 @@ respond.component.html = {
 					'<div class="title respond-element"><i class="fa fa-html5"></i> '+
 					'<span node-text="description">' + description + '</span>' +
 					'<i class="fa fa-angle-down"></i></div>' +
-					'<textarea>' + code + '</textarea>';
+					'<textarea>' + pretty + '</textarea>';
 					
 		// tag attributes
 		var attrs = [];
@@ -1224,7 +1252,7 @@ respond.component.video = {
 	parse:function(node){
 	
 		// get params
-		var id = $(node).attr('id');
+		var id = $(node).attr('videoid');
 		var description = $(node).attr('description');
 		var code = $(node).html();
 		
@@ -1257,7 +1285,7 @@ respond.component.video = {
 
 		// tag attributes
 		var attrs = [];
-		attrs['id'] = $(node).attr('data-id');
+		attrs['videoid'] = $(node).attr('data-id');
 		attrs['class'] = $(node).attr('data-cssclass');
 		attrs['description'] = $(node).attr('data-description');
 		
@@ -1465,6 +1493,7 @@ respond.component.menu = {
 		attrs['id'] = id;
 		attrs['data-id'] = id;
 		attrs['class'] = 'respond-menu';
+		attrs['data-cssclass'] = '';
 		attrs['data-type'] = '';
 		
 		// append element to the editor
@@ -1490,9 +1519,10 @@ respond.component.menu = {
 		// tag attributes
 		var attrs = [];
 		attrs['id'] = id;
-		attrs['data-id'] = id;
+		attrs['data-id'] = $(node).attr('menuid');
 		attrs['data-type'] = $(node).attr('type');
 		attrs['class'] = 'respond-menu';
+		attrs['data-cssclass'] = $(node).attr('class');
 		
 		utilities.element('div', attrs, html)
 		
@@ -1506,8 +1536,9 @@ respond.component.menu = {
 
 		// tag attributes
 		var attrs = [];
-		attrs['id'] = $(node).attr('data-id');
+		attrs['menuid'] = $(node).attr('data-id');
 		attrs['type'] = $(node).attr('data-type');
+		attrs['class'] = $(node).attr('data-cssclass');	
 		attrs['standalone'] = 'true';
 		
 		// return element
@@ -1520,5 +1551,519 @@ respond.component.menu = {
 	
 };
 
+// gallery component
+respond.component.gallery = {
+
+	// init gallery
+	init:function(){
+		
+		$(document).on('click', '.add-gallery-image', function(){
+		
+			// get scope from page
+			var scope = angular.element($("section.main")).scope();
+			
+			scope.retrieveImages();
+		
+			$('#imagesDialog').attr('data-plugin', 'respond.component.gallery');
+			$('#imagesDialog').attr('data-action', 'add');
+			$('#imagesDialog').modal('show');
+			
+			// reset modal
+			$('#imagesDialog .add-existing-image').removeClass('hidden');
+			$('#imagesDialog .upload-new-image').addClass('hidden');
+			$('#imagesDialog .add-external-image').addClass('hidden');
+			$('#external-image').val('');
+			$('#load-image').text(i18n.t('Existing Image'));
+			$('#images-dropdown').find('li').removeClass('active');
+		});
+		
+		// caption focus (for images)
+		$(document).on('focus', '.caption input', function(){
+			$(this.parentNode.parentNode).addClass('edit');
+		});
+	
+		// caption blur (for images)
+		$(document).on('blur', '.caption input', function(){
+			var caption = $(this).val();
+			$(this.parentNode.parentNode).find('img').attr('title', caption);
+			$(this.parentNode.parentNode).removeClass('edit');
+		});
+		
+		// remove-image click
+		$(document).on('click', '.remove-image', function(){
+			$(this.parentNode).remove();
+			context.find('a.'+this.parentNode.className).show();
+			return false;
+		}); 
+	
+		// make parsed elements sortable
+		$(document).on('respond.editor.contentLoaded', function(){	
+			// make the elements sortable
+			$('.respond-gallery div').sortable({handle:'img', items:'span.image', placeholder: 'editor-highlight', opacity:'0.6', axis:'x'});
+			
+		});
+		
+	},
+	
+	// adds an image to the gallery
+	addImage:function(image){
+		
+		// set local vs external image
+		var location = 'local';
+		
+		if(image.isExternal == true){
+			location = 'external';
+		}
+	
+		// get current node
+		var node = $(respond.editor.currNode);
+		
+		// build html
+		var html = '<span class="image"><img class="respond-element" src="' + image.fullUrl + '" title="" data-location="' + location + '" data-thumb="' + image.thumbUrl + '"></span>';
+				   
+		$(node).find('.images').append(html);
+		
+		$('#imagesDialog').modal('hide');
+		
+		return true;
+	
+	},
+
+	// creates gallery
+	create:function(){
+	
+		// generate uniqId
+		var id = respond.editor.generateUniqId('gallery', 'gallery');
+		
+		// build html
+		var html = respond.editor.defaults.elementMenu +
+					'<div class="images">' +
+					'<button type="button" class="add-gallery-image"><i class="fa fa-picture-o"></i></button>' +
+					'</div>';		
+					
+		// tag attributes
+		var attrs = [];
+		attrs['id'] = id;
+		attrs['data-id'] = id;
+		attrs['class'] = 'respond-gallery';
+		attrs['data-cssclass'] = '';
+		
+		// append element to the editor
+		respond.editor.append(
+			 utilities.element('div', attrs, html)
+		);
+		
+		// make the elements sortable
+		$('.respond-gallery div').sortable({handle:'img', items:'span.image', placeholder: 'editor-highlight', opacity:'0.6', axis:'x'});
+		
+		return true;
+		
+	},
+	
+	// parse gallery
+	parse:function(node){
+	
+		// get params
+		var id = $(node).attr('galleryid');
+		
+		// get old formid
+		if(id == undefined){
+			id = $(node).attr('id');
+		}
+		
+		// build html
+		var html = respond.editor.defaults.elementMenu +
+					'<div class="images">' +
+					'<button type="button" class="add-gallery-image"><i class="fa fa-picture-o"></i></button>';
+		
+		// get images			
+		var imgs = $(node).find('img');	
+				
+		for(var y=0; y<imgs.length; y++){
+		
+			// get caption
+			var title = $(imgs[y]).attr('title');
+			var src = $(imgs[y]).attr('src');
+			var caption = $(imgs[y]).attr('data-caption') || '';
+			var thumb = $(imgs[y]).attr('data-thumb') || '';
+	
+			// get scope from page
+			var scope = angular.element($("section.main")).scope();
+			
+			// get domain from scope
+			var url = scope.site.ImagesUrl;
+			
+			// replace the images URL with the URL from the site
+			src = utilities.replaceAll(src, '{{site.ImagesUrl}}', url);
+			
+			var image = '<img class="respond-element" src="' + src + '" title="' + title + '" ' + 
+				'data-caption="' + caption + '" data-thumb="' + thumb + '">';
+			
+			// build html
+			html +=	'<span class="image">' + image + '</span>';
+		
+		}			
+
+		// add button				  	
+		html += '</div>';				
+					
+		// tag attributes
+		var attrs = [];
+		attrs['id'] = id;
+		attrs['data-id'] = id;
+		attrs['class'] = 'respond-gallery';
+		attrs['data-cssclass'] = $(node).attr('class');
+		
+		// return element
+		return utilities.element('div', attrs, html);
+				
+	},
+	
+	// generate gallery
+	generate:function(node){
+		
+  		// html for tag
+  		var html = '';
+  		
+  		// get images
+  		var imgs = $(node).find('img');
+  		
+  		for(var y=0; y<imgs.length; y++){
+  		
+  			var title = $(imgs[y]).attr('title');
+  			var src = $(imgs[y]).attr('src');
+  			
+  			var location = $(imgs[y]).attr('data-location');
+  			
+  			if(location == undefined || location == null){
+	  			location = 'local';
+  			}
+  			
+  			var caption = $(imgs[y]).attr('data-caption')|| '';
+  			var thumb = $(imgs[y]).attr('data-thumb')|| '';
+  			
+  			if(location == 'local'){
+	  			// removes the domain from the img
+		  		if(src != ''){
+			  		var parts = src.split('files/');
+			  		src = 'files/' + parts[1];
+		  		}
+	  			
+	  			var image = '<img src="{{site.ImagesUrl}}' + src + '" title="' + title + '" ' +
+	  							'data-caption="' + caption + '" ' +
+	  							'data-thumb="' + thumb + '" ' +
+								'data-location="local">';
+  			}
+  			else{
+	  			var image = '<img src="' + src + '" title="' + title + '" ' + 
+	  							'data-caption="' + caption + '" ' +
+	  							'data-thumb="' + thumb + '" ' +
+								'data-location="external">';
+  			}
+  			
+			html += '<div>' + image + '</div>';
+		}
+  		
+		// tag attributes
+		var attrs = [];
+		attrs['galleryid'] = $(node).attr('data-id');
+		attrs['class'] = $(node).attr('data-cssclass');
+		
+		// return element
+		return utilities.element('respond-gallery', attrs, html);
+		
+	},
+	
+	// config gallery
+	config:function(node, form){}
+	
+};
+
+respond.component.gallery.init();
+
+// share component
+respond.component.share = {
+
+	// create share
+	create:function(){
+	
+		// generate uniqId
+		var id = respond.editor.generateUniqId('share', 'share');
+		
+		// build html
+		var html = respond.editor.defaults.elementMenu +
+					'<div class="title respond-element"><i class="fa fa-share-alt"></i> ' + 
+					i18n.t('Share') + '</div>';		
+					
+		// tag attributes
+		var attrs = [];
+		attrs['id'] = id;
+		attrs['data-id'] = id;
+		attrs['class'] = 'respond-share';
+		attrs['data-cssclass'] = '';
+		
+		attrs['data-fbshow'] = 'true';
+		attrs['data-fblayout'] = 'standard';
+		attrs['data-fbaction'] = 'like';
+		
+		attrs['data-twshow'] = 'true';
+		attrs['data-twvia'] = '';
+		attrs['data-twhash'] = '';
+		
+		attrs['data-pinshow'] = 'true';
+		
+		// append element to the editor
+		respond.editor.append(
+			 utilities.element('div', attrs, html)
+		);
+	
+		return true;
+		
+	},
+	
+	// parse share
+	parse:function(node){
+		
+		// get params
+		var id = $(node).attr('id');
+		var type = $(node).attr('type');
+		
+		// build html
+		var html = respond.editor.defaults.elementMenu +
+					'<div class="title respond-element"><i class="fa fa-share-alt"></i> ' + 
+					i18n.t('Share') + '</div>';
+		
+		// tag attributes
+		var attrs = [];
+		attrs['id'] = id;
+		attrs['data-id'] = $(node).attr('shareid');
+		attrs['class'] = 'respond-share';
+		attrs['data-cssclass'] = $(node).attr('cssclass');
+		
+		attrs['data-fbshow'] = $(node).attr('fbshow');
+		attrs['data-fblayout'] = $(node).attr('fblayout');
+		attrs['data-fbaction'] = $(node).attr('fbaction');
+		
+		attrs['data-twshow'] = $(node).attr('twshow');
+		attrs['data-twvia'] = $(node).attr('twvia');
+		attrs['data-twhash'] = $(node).attr('twhash');
+		
+		attrs['data-pinshow'] = $(node).attr('pinshow');
+		
+		utilities.element('div', attrs, html)
+		
+		// return element
+		return utilities.element('div', attrs, html);
+				
+	},
+	
+	// generate share
+	generate:function(node){
+
+		// tag attributes
+		var attrs = [];
+		attrs['shareid'] = $(node).attr('data-id');
+		attrs['cssclass'] = $(node).attr('data-cssclass');
+		
+		attrs['fbshow'] = $(node).attr('data-fbshow');
+		attrs['fblayout'] = $(node).attr('data-fblayout');
+		attrs['fbaction'] = $(node).attr('data-fbaction');	
+		
+		attrs['twshow'] = $(node).attr('data-twshow');
+		attrs['twvia'] = $(node).attr('data-twvia');
+		attrs['twhash'] = $(node).attr('data-twhash');	
+		
+		attrs['pinshow'] = $(node).attr('data-pinshow');	
+		
+		// return element
+		return utilities.element('respond-share', attrs, '');
+		
+	},
+	
+	// config list
+	config:function(node, form){}
+	
+};
+
+// badge component
+respond.component.badge = {
+
+	// create share
+	create:function(){
+	
+		// generate uniqId
+		var id = respond.editor.generateUniqId('badge', 'badge');
+		
+		// build html
+		var html = respond.editor.defaults.elementMenu +
+					'<div class="title respond-element"><i class="fa fa-shield"></i> ' + 
+					i18n.t('Badge') + '</div>';		
+					
+		// tag attributes
+		var attrs = [];
+		attrs['id'] = id;
+		attrs['data-id'] = id;
+		attrs['class'] = 'respond-badge';
+		attrs['data-cssclass'] = '';
+		attrs['data-display'] = 'monochrome';
+		
+		attrs['data-facebook'] = '';
+		attrs['data-twitter'] = '';
+		attrs['data-pinterest'] = '';
+		attrs['data-github'] = '';
+		attrs['data-tumblr'] = '';
+		
+		// append element to the editor
+		respond.editor.append(
+			 utilities.element('div', attrs, html)
+		);
+	
+		return true;
+		
+	},
+	
+	// parse badge
+	parse:function(node){
+		
+		// get params
+		var id = $(node).attr('id');
+		var type = $(node).attr('type');
+		
+		// build html
+		var html = respond.editor.defaults.elementMenu +
+					'<div class="title respond-element"><i class="fa fa-shield"></i> ' + 
+					i18n.t('Badge') + '</div>';
+		
+		// tag attributes
+		var attrs = [];
+		attrs['id'] = id;
+		attrs['data-id'] = $(node).attr('badgeid');
+		attrs['class'] = 'respond-badge';
+		attrs['data-cssclass'] = $(node).attr('cssclass');
+		attrs['data-display'] = $(node).attr('display');
+		
+		attrs['data-facebook'] = $(node).attr('facebook');
+		attrs['data-twitter'] = $(node).attr('twitter');
+		attrs['data-pinterest'] = $(node).attr('pinterest');
+		attrs['data-github'] = $(node).attr('github');
+		attrs['data-tumblr'] = $(node).attr('tumblr');
+		
+		utilities.element('div', attrs, html)
+		
+		// return element
+		return utilities.element('div', attrs, html);
+				
+	},
+	
+	// generate badge
+	generate:function(node){
+
+		// tag attributes
+		var attrs = [];
+		attrs['badgeid'] = $(node).attr('data-id');
+		attrs['cssclass'] = $(node).attr('data-cssclass');
+		attrs['display'] = $(node).attr('data-display');
+		
+		attrs['facebook'] = $(node).attr('data-facebook');
+		attrs['twitter'] = $(node).attr('data-twitter');
+		attrs['pinterest'] = $(node).attr('data-pinterest');
+		attrs['github'] = $(node).attr('data-github');
+		attrs['tumblr'] = $(node).attr('data-tumblr');
+		
+		// return element
+		return utilities.element('respond-badge', attrs, '');
+		
+	},
+	
+	// config list
+	config:function(node, form){}
+	
+};
+
+// comments component
+respond.component.comments = {
+
+	// create comments
+	create:function(){
+	
+		// generate uniqId
+		var id = respond.editor.generateUniqId('comments', 'comments');
+		
+		// build html
+		var html = respond.editor.defaults.elementMenu +
+					'<div class="title respond-element"><i class="fa fa-comments"></i> ' + 
+					i18n.t('Comments') + '</div>';		
+					
+		// tag attributes
+		var attrs = [];
+		attrs['id'] = id;
+		attrs['data-id'] = id;
+		attrs['class'] = 'respond-comments';
+		attrs['data-cssclass'] = '';
+		
+		attrs['data-showfacebook'] = 'true';
+		attrs['data-showdisqus'] = 'false';
+		attrs['data-disqusshortname'] = '';
+		
+		// append element to the editor
+		respond.editor.append(
+			 utilities.element('div', attrs, html)
+		);
+	
+		return true;
+		
+	},
+	
+	// parse comments
+	parse:function(node){
+		
+		// get params
+		var id = $(node).attr('id');
+		var type = $(node).attr('type');
+		
+		// build html
+		var html = respond.editor.defaults.elementMenu +
+					'<div class="title respond-element"><i class="fa fa-comments"></i> ' + 
+					i18n.t('Comments') + '</div>';
+		
+		// tag attributes
+		var attrs = [];
+		attrs['id'] = id;
+		attrs['data-id'] = $(node).attr('commentsid');
+		attrs['class'] = 'respond-comments';
+		attrs['data-cssclass'] = $(node).attr('cssclass');
+		
+		attrs['data-showfacebook'] = $(node).attr('showfacebook');
+		attrs['data-showdisqus'] = $(node).attr('showdisqus');
+		attrs['data-disqusshortname'] = $(node).attr('disqusshortname');
+		
+		utilities.element('div', attrs, html)
+		
+		// return element
+		return utilities.element('div', attrs, html);
+				
+	},
+	
+	// generate comments
+	generate:function(node){
+
+		// tag attributes
+		var attrs = [];
+		attrs['commentsid'] = $(node).attr('data-id');
+		attrs['cssclass'] = $(node).attr('data-cssclass');
+		
+		attrs['showfacebook'] = $(node).attr('data-showfacebook');
+		attrs['showdisqus'] = $(node).attr('data-showdisqus');
+		attrs['disqusshortname'] = $(node).attr('data-disqusshortname');
+		
+		// return element
+		return utilities.element('respond-comments', attrs, '');
+		
+	},
+	
+	// config list
+	config:function(node, form){}
+	
+};
 
 
